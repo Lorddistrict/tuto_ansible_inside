@@ -86,3 +86,6 @@
 
     - name: "[RUN] enable config for vhost - politique"
       command: a2ensite recettes-wiki
+
+    - name: "[RUN] reload config"
+      command: systemctl reload apache2
