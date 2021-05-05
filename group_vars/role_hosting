@@ -1,0 +1,3 @@
+enable_vim: true
+vim_syntax: false
+vim_yaml: false

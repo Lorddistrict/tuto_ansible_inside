@@ -2,18 +2,32 @@
 ## Play
 - hosts: all
   tasks:
-          - name: Install nmap
-            apt:
-                    name: nmap
-                    state: present
-          - name: Install vim
-            apt:
-                    name: vim
-                    state: present
-## Play
-- hosts: role_hosting
-  tasks:
-          - name: Install apache2
-            apt:
-                    name: apache2
-                    state: present
+    # NMAP
+    - name: Install nmap
+      apt:
+        name: nmap
+        state: present
+    # VIM
+    - name: Install vim
+      apt:
+        name: vim
+        state: present
+    # FOLDERS
+    - name: Create a directory s2e1
+      file:
+        path: /tmp/s2e1
+        state: directory
+        mode: '0755'
+    - name: Create a directory s2e2
+      file:
+        path: /tmp/s2e2
+        state: directory
+        mode: '0755'
+    - name: Create a file with content
+      copy:
+        dest: /tmp/s2e1/demo
+        content: demo
+    - name: Copy the file
+      copy:
+        src: /tmp/s2e1/demo
+        dest: /tmp/s2e2/demo2

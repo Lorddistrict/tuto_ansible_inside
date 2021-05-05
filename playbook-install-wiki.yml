@@ -1,0 +1,35 @@
+---
+## Play
+- hosts: role_hosting
+  tasks:
+    # PACKAGES
+    - name: Install apache2
+      apt:
+        name:
+          - apache2
+          - php8.0
+        state: present
+    # SECURITY
+    - name: Check if dokuwiki isn't a folder
+      stat:
+        path: "/usr/src/dokuwiki"
+      register: dokuwiki_directory
+    - name: Delete the file if exists
+      file:
+        path: /usr/src/dokuwiki
+        state: absent
+      when: dokuwiki_directory.stat.exists and not dokuwiki_directory.stat.isdir
+    # INSTALL
+    - name: Download dokuwiki
+      get_url:
+        url: https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
+        dest: /usr/src
+    - name: Unzip dokuwiki archive
+      unarchive:
+        remote_src: yes
+        src: /usr/src/dokuwiki-stable.tgz
+        dest: /usr/src
+    - name: Remove unused archive
+      file:
+        path: /usr/src/dokuwiki-stable.tgz
+        state: absent
