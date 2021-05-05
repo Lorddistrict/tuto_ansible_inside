@@ -39,23 +39,23 @@
       command: cp -r /usr/src/dokuwiki /var/www/recettes_wiki
 
     - name: "[UPDATE] folder's owner"
-        file:
-          path: /var/www/recettes_wiki
-          state: directory
-          recurse: yes
-          owner: www-data
-          group: www-data
+      file:
+        path: /var/www/recettes_wiki
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
 
     - name: "[CREATE] directory politique_wiki"
         command: cp -r /usr/src/dokuwiki /var/www/politique_wiki
 
     - name: "[UPDATE] folder's owner"
-        file:
-          path: /var/www/politique_wiki
-          state: directory
-          recurse: yes
-          owner: www-data
-          group: www-data
+      file:
+        path: /var/www/politique_wiki
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
 
     # VHOSTS - RECETTES
 
@@ -65,24 +65,24 @@
         line: "127.0.0.1    recettes.wiki"
 
     - name: "[COPY] VHost from host to VM - recettes"
-        copy:
-          src: files/recettes-wiki.conf
-          dest: /etc/apache2/sites-available/recettes-wiki.conf
+      copy:
+        src: files/recettes-wiki.conf
+        dest: /etc/apache2/sites-available/recettes-wiki.conf
 
     - name: "[RUN] enable config for vhost - recettes"
-        command: a2ensite recettes-wiki
+      command: a2ensite recettes-wiki
 
     # VHOSTS - POLITIQUE
 
     - name: "[UPDATE] vhost - politique"
-        lineinfile:
-          dest: /etc/hosts
-          line: "127.0.0.1    politique.wiki"
+      lineinfile:
+        dest: /etc/hosts
+        line: "127.0.0.1    politique.wiki"
 
     - name: "[COPY] VHost from host to VM - politique"
-        copy:
-          src: files/recettes-wiki.conf
-          dest: /etc/apache2/sites-available/politique-wiki.conf
+      copy:
+        src: files/recettes-wiki.conf
+        dest: /etc/apache2/sites-available/politique-wiki.conf
 
     - name: "[RUN] enable config for vhost - politique"
-        command: a2ensite recettes-wiki
+      command: a2ensite recettes-wiki
