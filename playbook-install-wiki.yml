@@ -47,7 +47,7 @@
         group: www-data
 
     - name: "[CREATE] directory politique_wiki"
-        command: cp -r /usr/src/dokuwiki /var/www/politique_wiki
+      command: cp -r /usr/src/dokuwiki /var/www/politique_wiki
 
     - name: "[UPDATE] folder's owner"
       file:
