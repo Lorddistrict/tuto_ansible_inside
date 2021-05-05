@@ -12,6 +12,11 @@
       apt:
         name: vim
         state: present
+    # MAKE
+    - name: Install make
+      apt:
+        name: make
+        state: present
     # FOLDERS
     - name: Create a directory s2e1
       file:
