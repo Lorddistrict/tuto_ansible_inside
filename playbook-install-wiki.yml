@@ -75,7 +75,7 @@
 
     - name: "[B2][SYNC] dokuwiki with destination directory"
       synchronize:
-        archive: true # keep origin permission
+        # archive: true # keep origin permission
         src: /usr/src/dokuwiki/
         dest: "/var/www/{{ item.config }}/" # if you put a "/" at the end you're sending only the content
       with_items: "{{ dokuwiki_sites }}"
@@ -98,5 +98,11 @@
         dest: "/etc/apache2/sites-available/{{ item.config }}.conf"
       with_items: "{{ dokuwiki_sites }}"
 
-    - name: "[RUN] reload config"
-      command: systemctl reload apache2
+    - name: "[RUN] enable apache config"
+      command: "a2ensite {{ item.config }}"
+      with_items: "{{ dokuwiki_sites }}"
+
+    - name: "[RUN] reload apache service"
+      service:
+        name: apache2
+        state: reloaded
