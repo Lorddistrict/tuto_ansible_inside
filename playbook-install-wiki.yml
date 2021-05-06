@@ -42,7 +42,7 @@
         url: https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
         dest: "/usr/src"
 
-    - name: "[CHECK] if dokuwiki is alrady installed"
+    - name: "[CHECK] if dokuwiki is already installed"
       stat:
         path: "/usr/src/dokuwiki"
       register: dokuwiki_directory
@@ -52,11 +52,11 @@
         remote_src: yes
         src: "/usr/src/dokuwiki-stable.tgz"
         dest: "/usr/src"
-      when: dokuwiki_directory.stat.exists and not dokuwiki_directory.stat.isdir
+      when: not dokuwiki_directory.stat.exists
 
     - name: "[RENAME] dokuwiki with version to a no-version one"
       command: "mv /usr/src/dokuwiki-{{  dokuwiki_version }} /usr/src/dokuwiki"
-      when: dokuwiki_directory.stat.exists and not dokuwiki_directory.stat.isdir
+      when: not dokuwiki_directory.stat.exists
 
     - name: "[REMOVE] archive"
       file:
@@ -77,7 +77,7 @@
       synchronize:
         archive: true # keep origin permission
         src: /usr/src/dokuwiki
-        dest: "/var/www/{{ item.config }}/"
+        dest: "/var/www/{{ item.config }}/" ## if you put a "/" at the end you're sending only the content not the root folder
       with_items: "{{ dokuwiki_sites }}"
       delegate_to: "{{ inventory_hostname }}" # source is current machine
 
