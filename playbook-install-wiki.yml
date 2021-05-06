@@ -1,91 +1,106 @@
 ---
-## Play
+
+# CONTROL
+
+- hosts: role_control
+  tasks:
+
+    # PACKAGES
+
+    - name: "[A2][INSTALL] Packages"
+      apt:
+        name: rsync
+        state: present
+
+    # VHOSTS
+
+    - name: "[A5][UPDATE] vhost - politique"
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }} {{ item.domain }}"
+      with_items: "{{ dokuwiki_sites }}"
+
+# HOSTING
+
 - hosts: role_hosting
   tasks:
 
     # PACKAGES
 
-    - name: "[INSTALL] Packages"
+    - name: "[A2][INSTALL] Packages"
       apt:
         name:
           - apache2
           - php7.3
+          - rsync
         state: present
 
     # INSTALL
 
-    - name: "[DOWNLOAD] dokuwiki"
+    - name: "[A3][DOWNLOAD] dokuwiki"
       get_url:
         url: https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz
         dest: "/usr/src"
 
-    - name: "[UNZIP] dokuwiki archive"
+    - name: "[CHECK] if dokuwiki is alrady installed"
+      stat:
+        path: "/usr/src/dokuwiki"
+      register: dokuwiki_directory
+
+    - name: "[A4][UNZIP] dokuwiki archive"
       unarchive:
         remote_src: yes
         src: "/usr/src/dokuwiki-stable.tgz"
         dest: "/usr/src"
+      when: dokuwiki_directory.stat.exists and not dokuwiki_directory.stat.isdir
+
+    - name: "[RENAME] dokuwiki with version to a no-version one"
+      command: "mv /usr/src/dokuwiki-{{  dokuwiki_version }} /usr/src/dokuwiki"
+      when: dokuwiki_directory.stat.exists and not dokuwiki_directory.stat.isdir
 
     - name: "[REMOVE] archive"
       file:
         path: "/usr/src/dokuwiki-stable.tgz"
         state: absent
 
-    - name: "[RENAME] dokuwiki file to an unversioned one"
-      command: mv /usr/src/dokuwiki-2020-07-29 /usr/src/dokuwiki
-
       # MANAGE FOLDERS FOR APACHE
 
-    - name: "[CREATE] directory recettes_wiki"
-      command: cp -r /usr/src/dokuwiki /var/www/recettes_wiki
-
-    - name: "[UPDATE] folder's owner"
+    - name: "[B1][CREATE] directory for each website"
       file:
-        path: /var/www/recettes_wiki
         state: directory
-        recurse: yes
+        path: "/var/www/{{ item.config }}"
         owner: www-data
         group: www-data
+      with_items: "{{ dokuwiki_sites }}"
 
-    - name: "[CREATE] directory politique_wiki"
-      command: cp -r /usr/src/dokuwiki /var/www/politique_wiki
+    - name: "[B2][SYNC] dokuwiki with destination directory"
+      synchronize:
+        archive: true # keep origin permission
+        src: /usr/src/dokuwiki
+        dest: "/var/www/{{ item.config }}/"
+      with_items: "{{ dokuwiki_sites }}"
+      delegate_to: "{{ inventory_hostname }}" # source is current machine
 
-    - name: "[UPDATE] folder's owner"
+    - name: "[B3][UPDATE] folder's permissions"
       file:
-        path: /var/www/politique_wiki
+        path: "/var/www/{{ item.config }}/"
         state: directory
-        recurse: yes
-        owner: www-data
+        recursive: true
         group: www-data
+        owner: www-data
+      with_items: "{{ dokuwiki_sites }}"
 
-    # VHOSTS - RECETTES
+    # VHOSTS
 
-    - name: "[UPDATE] vhost - recettes"
-      lineinfile:
-        dest: /etc/hosts
-        line: "127.0.0.1    recettes.wiki"
+    - name: "[MANAGE] Vhosts config"
+      template:
+        src: templates/etc.apache2.site-available.site.apache2.conf
+        dest: "/etc/apache2/sites-available/{{ item.config }}.conf"
+      with_items: "{{ dokuwiki_sites }}"
 
-    - name: "[COPY] VHost from host to VM - recettes"
-      copy:
-        src: files/recettes-wiki.conf
-        dest: /etc/apache2/sites-available/recettes-wiki.conf
 
-    - name: "[RUN] enable config for vhost - recettes"
-      command: a2ensite recettes-wiki
 
-    # VHOSTS - POLITIQUE
 
-    - name: "[UPDATE] vhost - politique"
-      lineinfile:
-        dest: /etc/hosts
-        line: "127.0.0.1    politique.wiki"
-
-    - name: "[COPY] VHost from host to VM - politique"
-      copy:
-        src: files/recettes-wiki.conf
-        dest: /etc/apache2/sites-available/politique-wiki.conf
-
-    - name: "[RUN] enable config for vhost - politique"
-      command: a2ensite recettes-wiki
 
     - name: "[RUN] reload config"
       command: systemctl reload apache2
