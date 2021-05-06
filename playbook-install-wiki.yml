@@ -14,7 +14,7 @@
 
     # VHOSTS
 
-    - name: "[A5][UPDATE] vhost - politique"
+    - name: "[A5][UPDATE] vhosts"
       lineinfile:
         path: /etc/hosts
         line: "{{ item.ip }} {{ item.domain }}"
@@ -76,8 +76,8 @@
     - name: "[B2][SYNC] dokuwiki with destination directory"
       synchronize:
         archive: true # keep origin permission
-        src: /usr/src/dokuwiki
-        dest: "/var/www/{{ item.config }}/" ## if you put a "/" at the end you're sending only the content not the root folder
+        src: /usr/src/dokuwiki/
+        dest: "/var/www/{{ item.config }}/" # if you put a "/" at the end you're sending only the content
       with_items: "{{ dokuwiki_sites }}"
       delegate_to: "{{ inventory_hostname }}" # source is current machine
 
@@ -97,10 +97,6 @@
         src: templates/etc.apache2.site-available.site.apache2.conf
         dest: "/etc/apache2/sites-available/{{ item.config }}.conf"
       with_items: "{{ dokuwiki_sites }}"
-
-
-
-
 
     - name: "[RUN] reload config"
       command: systemctl reload apache2
