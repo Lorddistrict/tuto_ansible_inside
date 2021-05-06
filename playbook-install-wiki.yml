@@ -85,7 +85,7 @@
       file:
         path: "/var/www/{{ item.config }}/"
         state: directory
-        recursive: true
+        recurse: true
         group: www-data
         owner: www-data
       with_items: "{{ dokuwiki_sites }}"
